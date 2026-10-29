@@ -1,0 +1,27 @@
+# .NET build output
+**/bin/
+**/obj/
+.vs/
+
+# Frontend dependencies and build output
+**/node_modules/
+**/dist/
+*.tsbuildinfo
+
+# Local database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+*.pem
+
+# Local user files and logs
+*.csproj.user
+*.suo
+*.log
