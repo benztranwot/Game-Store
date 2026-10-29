@@ -48,7 +48,6 @@ GameStore/
 │   ├── package.json
 │   ├── package-lock.json
 │   └── vite.config.ts
-├── dotnet-tools.json
 └── README.md
 ```
 
