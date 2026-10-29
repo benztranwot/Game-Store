@@ -2,7 +2,7 @@
 
 A full-stack game management application built while learning C# and ASP.NET Core. The backend provides a REST API backed by SQLite, and the React frontend lets users browse, create, edit, and delete games.
 
-This is my first ASP.NET Core project, built by following [Julio Casal’s ASP.NET Core tutorial].
+This is my first ASP.NET Core project, built by following Julio Casal’s ASP.NET Core tutorial.
 
 ## Features
 
