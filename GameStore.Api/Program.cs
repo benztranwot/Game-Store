@@ -1,5 +1,4 @@
 using GameStore.Api.Data;
-using GameStore.Api.Endpoints;
 using GameStore.Api.EndPoints;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,3 +14,5 @@ app.MapGenresEndpoints();
 app.MigrateDb();
 
 app.Run();
+
+public partial class Program { }
