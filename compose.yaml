@@ -1,0 +1,24 @@
+services:
+  api:
+    image: gamestore-api:1.0
+    build:
+      context: ./GameStore.Api
+    ports:
+      - "127.0.0.1:5205:8080"
+    environment:
+      ConnectionStrings__GameStore: "Data Source=/data/GameStore.db"
+    volumes:
+      - gamestore-data:/data
+
+  frontend:
+    image: gamestore-frontend:1.0
+    build:
+      context: ./GameStore.React
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - api
+
+volumes:
+  gamestore-data:
+    external: true

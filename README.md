@@ -11,22 +11,24 @@ This is my first ASP.NET Core project, built by following Julio Casal’s ASP.NE
 - Create, update, and delete games.
 - Validate incoming create and update requests.
 - Store data in SQLite using Entity Framework Core.
-- Apply database migrations and seed initial genres at application startup.
+- Apply pending database migrations at startup and seed initial genres and games when their respective tables are empty.
 
 ## Tech Stack
 
-| Layer             | Technologies                           |
-| ----------------- | -------------------------------------- |
-| Backend           | C#, .NET 10, ASP.NET Core Minimal APIs |
-| Database          | SQLite, Entity Framework Core 10       |
-| Frontend          | React 19, TypeScript, Vite 7           |
-| UI and navigation | Bootstrap 5, React Router              |
-| API testing       | Postman                                |
+| Layer                      | Technologies                           |
+| -------------------------- | -------------------------------------- |
+| Backend                    | C#, .NET 10, ASP.NET Core Minimal APIs |
+| Database                   | SQLite, Entity Framework Core 10       |
+| Frontend                   | React 19, TypeScript, Vite 7           |
+| UI and navigation          | Bootstrap 5, React Router              |
+| API testing                | Postman                                |
+| Containers and web serving | Docker, Docker Compose, NGINX          |
 
 ## Project Structure
 
 ```text
 GameStore/
+├── compose.yaml
 ├── GameStore.Api/
 │   ├── Data/
 │   │   ├── Migrations/
@@ -36,6 +38,8 @@ GameStore/
 │   ├── EndPoints/
 │   ├── Models/
 │   ├── Properties/
+│   ├── .dockerignore
+│   ├── Dockerfile
 │   ├── GameStore.Api.csproj
 │   ├── Program.cs
 │   └── dotnet-tools.json
@@ -45,13 +49,117 @@ GameStore/
 │   │   ├── components/
 │   │   ├── models/
 │   │   └── pages/
+│   ├── .dockerignore
+│   ├── Dockerfile
+│   ├── nginx.conf
 │   ├── package.json
 │   ├── package-lock.json
 │   └── vite.config.ts
 └── README.md
 ```
 
-## Getting Started
+## Run with Docker
+
+### Prerequisites
+
+- Docker Desktop running with Linux containers enabled.
+- Git, if cloning the repository.
+
+The Docker build installs the required .NET and Node.js dependencies inside
+build containers. You do not need to install those tools locally for this option.
+
+### First-Time Setup
+
+Clone the repository and enter its root folder:
+
+```bash
+git clone https://github.com/benztranwot/Game-Store.git
+cd Game-Store
+```
+
+Create the external volume used to store the SQLite database:
+
+```bash
+docker volume create gamestore-data
+```
+
+Build the images and start both services:
+
+```bash
+docker compose up -d --build
+```
+
+If you already have the repository locally, run these Docker commands from
+the folder containing compose.yaml.
+
+### Open the Application
+
+| Address                         | Purpose                        |
+| ------------------------------- | ------------------------------ |
+| http://localhost:8080           | React frontend served by NGINX |
+| http://localhost:8080/api/games | Games API through NGINX        |
+| http://localhost:5205/games     | Direct access to the games API |
+
+NGINX serves the built frontend and forwards `/api/` requests to the API
+container, removing the `/api` prefix.
+
+The API applies pending database migrations at startup. Initial genres and
+games are inserted when their respective tables are empty.
+
+### Database Persistence
+
+SQLite is stored at `/data/GameStore.db` inside the API container.
+That directory is mounted from the external Docker volume `gamestore-data`.
+
+The Docker database is separate from the database used when running the API
+directly on your computer.
+
+Stopping or replacing containers preserves the volume and its data.
+Deleting the volume deletes that database.
+
+### Useful Commands
+
+Check service status:
+
+```bash
+docker compose ps
+```
+
+Follow application logs:
+
+```bash
+docker compose logs -f
+```
+
+Press Ctrl+C to leave the log viewer. Background containers keep running.
+
+After changing application code, rebuild and update the containers:
+
+```bash
+docker compose up -d --build
+```
+
+Stop and remove the containers and Compose network:
+
+```bash
+docker compose down
+```
+
+The external database volume remains.
+
+This setup serves production builds and does not provide automatic hot reload.
+Use the local development instructions below when you want the development servers.
+
+## Local Development Without Docker
+
+If the Docker version is running, stop it before starting the local backend,
+because both use port 5205:
+
+```bash
+docker compose down
+```
+
+Run this command from the repository root. The database volume is preserved.
 
 ### Prerequisites
 
@@ -155,6 +263,10 @@ A successful POST returns **201 Created**, the created game, and a `Location` he
 - Performing asynchronous database operations.
 - Connecting a React frontend to an ASP.NET Core API.
 - Testing HTTP requests with Postman.
+- Building backend and frontend images with multi-stage Dockerfiles.
+- Running the application with Docker Compose.
+- Preserving SQLite data using a named Docker volume.
+- Serving React files and proxying API requests with NGINX.
 
 ## Acknowledgments
 
