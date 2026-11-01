@@ -3,18 +3,11 @@ using GameStore.Api.Dtos;
 using GameStore.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace GameStore.Api.Endpoints;
+namespace GameStore.Api.EndPoints;
 
 public static class GamesEndpoints
 {
     const string GetGameEndpointName = "GetGame";
-
-    // private static readonly List<GameDto> games =
-    // [
-    //     new(1, "Street Fighter 2", "Fighting", 19.99m, new DateOnly(1992, 7, 15)),
-    //     new(2, "Elden Ring", "RPG", 39.99m, new DateOnly(2024, 2, 29)),
-    //     new(3, "Forza Horizon 4", "Racing", 29.99m, new DateOnly(1992, 7, 15)),
-    // ];
 
     public static void MapGamesEndpoints(this WebApplication app)
     {
@@ -65,6 +58,20 @@ public static class GamesEndpoints
             "/",
             async (CreateGameDto newGame, GameStoreContext dbContext) =>
             {
+                var genreExists = await dbContext.Genres.AnyAsync(genre =>
+                    genre.Id == newGame.GenreId
+                );
+
+                if (!genreExists)
+                {
+                    return Results.ValidationProblem(
+                        new Dictionary<string, string[]>
+                        {
+                            ["GenreId"] = ["The selected genre does not exist."],
+                        }
+                    );
+                }
+
                 Game game = new()
                 {
                     Name = newGame.Name,
@@ -102,6 +109,20 @@ public static class GamesEndpoints
                 if (existingGame is null)
                     return Results.NotFound();
 
+                var genreExists = await dbContext.Genres.AnyAsync(genre =>
+                    genre.Id == updatedGame.GenreId
+                );
+
+                if (!genreExists)
+                {
+                    return Results.ValidationProblem(
+                        new Dictionary<string, string[]>
+                        {
+                            ["GenreId"] = ["The selected genre does not exist."],
+                        }
+                    );
+                }
+
                 existingGame.Name = updatedGame.Name;
                 existingGame.GenreID = updatedGame.GenreId;
                 existingGame.Price = updatedGame.Price;
@@ -118,9 +139,11 @@ public static class GamesEndpoints
             "/{id}",
             async (int id, GameStoreContext dbContext) =>
             {
-                await dbContext.Games.Where(game => game.Id == id).ExecuteDeleteAsync();
+                var deletedCount = await dbContext
+                    .Games.Where(game => game.Id == id)
+                    .ExecuteDeleteAsync();
 
-                return Results.NoContent();
+                return deletedCount == 0 ? Results.NotFound() : Results.NoContent();
             }
         );
     }
